@@ -1,0 +1,118 @@
+<?php
+
+/**
+ * Implements hook_cron().
+ */
+function node_scheduler_cron() {
+  $queue = DrupalQueue::get('nodeSchedulerQueue');
+
+  // Select all scheduled actions that were scheduled to happen by now
+  $now = time();
+  $query = db_select('node_scheduler', 'ns');
+  $query->fields('ns')
+    ->condition('scheduled_time', $now, '<')
+    ->condition('queued_time', 0);
+  $result = $query->execute();
+
+  // Put each scheduled action in the queue to run
+  while ($item = $result->fetch()) {
+    $queue->createItem($item);
+
+    // Set queued time on this item so that we know it was added to the queue
+    $query = db_update('node_scheduler');
+    $query->fields(array('queued_time' => $now))
+      ->condition('nid', $item->nid)
+      ->condition('key', $item->key)
+      ->execute();
+  }
+  
+  // Delete old rows from the table, if they were executed more than 30 days ago
+  // TODO: Could use a variable to set how long to keep rows in the table
+  $one_month_ago = $now - (3600 * 24 * 30);
+  db_delete('node_scheduler')
+    ->condition('executed_time', $one_month_ago, '<')
+    ->condition('executed_time', 0, '>')
+    ->execute();
+}
+
+/**
+ * Implements hook_cron_queue_info().
+ */
+function node_scheduler_cron_queue_info() {
+  $queues = array();
+  $queues['nodeSchedulerQueue'] = array(
+    //function to call for each item
+    'worker callback' => 'node_sheduler_queue_callback',
+    // seconds to spend working on the queue
+    // TODO: This should ideally be a variable
+    'time' => 10,
+  );
+  return $queues;
+}
+
+/**
+ * Callback function for queue nodeSchedulerQueueinv
+ * 
+ * This function invokes the hook for other modules to run operations on this queue item.
+ */
+function node_scheduler_queue_callback($item) {
+  try {
+    module_invoke_all('node_scheduler_action', $item->nid, $item->key);
+
+    // Set executed time on this item so that we know it was successfully run
+    $now = time();
+    $query = db_update('node_scheduler');
+    $query->fields(array('executed_time' => $now))
+      ->condition('nid', $item->nid)
+      ->condition('key', $item->key)
+      ->execute();
+  }
+  catch (Exception $e) {
+    watchdog(
+      'node_scheduler',
+      'The scheduled action !key on the node !nid could not be executed.',
+      array(
+        '!nid' => $item->nid,
+        '!key' => $key,
+      ),
+      WATCHDOG_ERROR
+    );
+  }
+}
+
+/**
+ * Public function node_scheduler_schedule_action()
+ * 
+ * Schedule an action to fire on a node at some point in the future (requires cron)
+ */
+function node_scheduler_schedule_action($nid, $key, $scheduled_time, $reschedule = TRUE) {
+  // If reschedule flag is set then remove any unqueued actions matching nid/key
+  if ($reschedule) {
+    node_scheduler_remove_action($nid, $key);
+  }
+
+  // Insert this action into the node_scheduler table
+  $query = db_insert('node_scheduler');
+  $query->fields(array('nid', 'key', 'scheduled_time'))
+    ->values(
+      array(
+        'nid' => $nid,
+        'key' => $key,
+        'scheduled_time' => $scheduled_time,
+      )
+    );
+  $query->execute();
+}
+
+/**
+ * Public function node_scheduler_remove_action()
+ *
+ * Remove any unqueued, scheduled actions matching nid/key
+ */
+function node_scheduler_remove_action($nid, $key) {
+  db_delete('node_scheduler')
+    ->condition('nid', $nid)
+    ->condition('key', $key)
+    ->condition('queued_time', 0)
+    ->execute();
+}

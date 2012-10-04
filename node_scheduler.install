@@ -1,0 +1,53 @@
+<?php
+
+/**
+ * Implementation of hook_schema().
+ */
+function node_scheduler_schema() {
+  $schema = array();
+  $schema['node_scheduler'] = array(
+    'description' => 'Storage for scheduled_actions.',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'The {node}.nid to run the scheduled action on.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'key' => array(
+        'description' => 'Key for the scheduled action to run.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'scheduled_time' => array(
+        'description' => 'The Unix timestamp when the when the scheduled action should run.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'queued_time' => array(
+        'description' => 'The Unix timestamp when the when the scheduled action should run.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'executed_time' => array(
+        'description' => 'The Unix timestamp when the action was actually called.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('nid', 'key', 'scheduled_time'),
+    'indexes' => array(
+      'nid_key' => array('nid', 'key'),
+      'scheduled_time' => array('scheduled_time'),
+      'queued_time' => array('queued_time'),
+      'executed_time' => array('executed_time'),
+    ),
+  );
+  return $schema;
+}

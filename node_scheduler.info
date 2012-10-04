@@ -1,0 +1,4 @@
+name = Node Scheduler
+description = Implements a very simpler scheduler API for simple tasks to run on specific nodes.
+core = 7.x
+package = Affinity Bridge
