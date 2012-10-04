@@ -12,7 +12,7 @@ Public function: node_scheduler_remove_action($nid, $key, $time) removes an acti
 Hook: hook_node_scheduler_action($nid, $key) allows other modules to run operations on the action.
 
     /**
-     * Implements hook_node_scheduler_oction().
+     * Implements hook_node_scheduler_action().
      */
     function example_node_scheduler_action($nid, $key) {
       switch ($op) {
