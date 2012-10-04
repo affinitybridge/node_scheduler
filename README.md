@@ -11,21 +11,19 @@ Public function: node_scheduler_remove_action($nid, $key, $time) removes an acti
 
 Hook: hook_node_scheduler_action($nid, $key) allows other modules to run operations on the action.
 
-<code>
-/**
- * Implements hook_node_scheduler_oction().
- */
-function example_node_scheduler_action($nid, $key) {
-  switch ($op) {
-    case 'example_email_reminder':
-      // TODO: Load the node from the node
-      // TODO: Call drupal_mail
-      break;
-    case 'example_node_update':
-      // TODO: Load the node from the nid
-      // TODO: Make modifications to the $node object
-      // TODO: Call node_save()
-      break;
-  }
-}
-</code>
+    /**
+     * Implements hook_node_scheduler_oction().
+     */
+    function example_node_scheduler_action($nid, $key) {
+      switch ($op) {
+        case 'example_email_reminder':
+          // TODO: Load the node from the node
+          // TODO: Call drupal_mail
+          break;
+        case 'example_node_update':
+          // TODO: Load the node from the nid
+          // TODO: Make modifications to the $node object
+          // TODO: Call node_save()
+          break;
+      }
+    }
