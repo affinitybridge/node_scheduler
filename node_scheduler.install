@@ -15,7 +15,7 @@ function node_scheduler_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'key' => array(
+      'schedule_key' => array(
         'description' => 'Key for the scheduled action to run.',
         'type' => 'varchar',
         'length' => 32,
@@ -41,9 +41,9 @@ function node_scheduler_schema() {
         'default' => 0,
       ),
     ),
-    'primary key' => array('nid', 'key', 'scheduled_time'),
+    'primary key' => array('nid', 'schedule_key', 'scheduled_time'),
     'indexes' => array(
-      'nid_key' => array('nid', 'key'),
+      'nid_key' => array('nid', 'schedule_key'),
       'scheduled_time' => array('scheduled_time'),
       'queued_time' => array('queued_time'),
       'executed_time' => array('executed_time'),
