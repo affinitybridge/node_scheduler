@@ -104,12 +104,16 @@ function node_scheduler_schedule_action($nid, $schedule_key, $scheduled_time, $r
 /**
  * Public function node_scheduler_remove_action()
  *
- * Remove any unqueued, scheduled actions matching nid/schedule_key
+ * Remove any unqueued, scheduled actions possibly matching nid/schedule_key
  */
-function node_scheduler_remove_action($nid, $schedule_key) {
-  db_delete('node_scheduler')
-    ->condition('nid', $nid)
-    ->condition('schedule_key', $schedule_key)
-    ->condition('queued_time', 0)
-    ->execute();
+function node_scheduler_remove_action($nid = 'all', $schedule_key = 'all') {
+  $query = db_delete('node_scheduler');
+  if ($schedule_key <> 'all' ) {
+    $query->condition('schedule_key', $schedule_key);
+  }
+  if ($nid <> 'all') {
+    $query->condition('nid', $nid);
+  }
+  $query->condition('queued_time', 0);
+  $query->execute();
 }
