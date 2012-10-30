@@ -80,6 +80,21 @@ function node_scheduler_queue_callback($item) {
   }
 }
 
+
+/**
+ * Public function node_scheduler_clear_actions()
+ *
+ * Remove all unqueued, scheduled actions matching a schedule_key
+ */
+function node_scheduler_clear_actions($schedule_key, $keep_queued_actions = TRUE) {
+  $query = db_delete('node_scheduler');
+  $query->condition('schedule_key', $schedule_key);
+  if ($keep_queued_actions) {
+    $query->condition('queued_time', 0);
+  }
+  $query->execute();
+}
+
 /**
  * Public function node_scheduler_schedule_action()
  * 
@@ -89,6 +104,11 @@ function node_scheduler_schedule_action($nid, $schedule_key, $scheduled_time, $r
   // If reschedule flag is set then remove any unqueued actions matching nid/key
   if ($reschedule) {
     node_scheduler_remove_action($nid, $schedule_key);
+  }
+
+  $now = time();
+  if ($scheduled_time < $now) {
+    $scheduled_time = $now;
   }
 
   // Insert this action into the node_scheduler table
