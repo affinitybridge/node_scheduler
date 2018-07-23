@@ -25,7 +25,7 @@ function node_scheduler_cron() {
       ->condition('schedule_key', $item->schedule_key)
       ->execute();
   }
-  
+
   // Delete old rows from the table, if they were executed more than 30 days ago
   // TODO: Could use a variable to set how long to keep rows in the table
   $one_month_ago = $now - (3600 * 24 * 30);
@@ -51,8 +51,19 @@ function node_scheduler_cron_queue_info() {
 }
 
 /**
+ * Implements hook_hook_info().
+ */
+function node_scheduler_hook_info() {
+  return array(
+    'node_scheduler_action' => array(
+      'group' => 'node_scheduler',
+    ),
+  );
+}
+
+/**
  * Callback function for queue node_scheduler_queue
- * 
+ *
  * This function invokes the hook for other modules to run operations on this queue item.
  */
 function node_scheduler_queue_callback($item) {
@@ -97,7 +108,7 @@ function node_scheduler_clear_actions($schedule_key, $keep_queued_actions = TRUE
 
 /**
  * Public function node_scheduler_schedule_action()
- * 
+ *
  * Schedule an action to fire on a node at some point in the future (requires cron)
  */
 function node_scheduler_schedule_action($nid, $schedule_key, $scheduled_time, $reschedule = TRUE) {
